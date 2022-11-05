@@ -27,7 +27,7 @@ func New() *App {
 	}
 	time.Local = loc // -> this is setting the global timezone
 
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("TG_API_TOKEN"))
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("TG_API_KEY"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,14 +64,15 @@ func (a *App) Serve(ctx context.Context) {
 			if msg != nil {
 				if msg.IsCommand() {
 					switch msg.Command() {
-					case "about":
+					case "start":
 						a.ReplyToMsg(msg, `This bot supports people queues.
 Send your full name to queue up, or send /list command to see full queue for today.`)
 					case "list":
 						if a.currentList == nil {
 							a.SendToChat(msg.Chat.ID, "Queue is not open yet.")
 						} else if time.Now().Before(a.currentList.StartedAt) {
-							a.SendToChat(msg.Chat.ID, "Queue is not open yet. Wait until "+a.currentList.StartedAt.Format("2 January 15:04 MST"))
+							a.SendToChat(msg.Chat.ID, fmt.Sprintf("Queue is not open yet. Wait until %s %s",
+								a.currentList.StartedAt.Format("2 January 15:04"), time.Local.String()))
 						} else {
 							a.SendToChat(msg.Chat.ID, a.currentList.String())
 						}
@@ -80,7 +81,8 @@ Send your full name to queue up, or send /list command to see full queue for tod
 					if a.currentList == nil {
 						a.SendToChat(msg.Chat.ID, "Queue is not open yet.")
 					} else if time.Now().Before(a.currentList.StartedAt) {
-						a.SendToChat(msg.Chat.ID, "Queue is not open yet. Wait until "+a.currentList.StartedAt.Format("2 January 15:04 MST"))
+						a.SendToChat(msg.Chat.ID, fmt.Sprintf("Queue is not open yet. Wait until %s %s",
+							a.currentList.StartedAt.Format("2 January 15:04"), time.Local.String()))
 					} else {
 						if err := a.currentList.TailAddPeople(msg.Text); err != nil {
 							a.SendToChat(msg.Chat.ID, fmt.Sprintf("Error: %s. Try again.", err))

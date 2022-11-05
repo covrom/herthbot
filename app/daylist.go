@@ -7,9 +7,9 @@ import (
 )
 
 func StartStopTomorrow() (start, stop time.Time) {
-	tnow := time.Now().Truncate(24 * time.Hour).Add(24 * time.Hour)
-	t6 := tnow.Add(6 * time.Hour)
-	t18 := tnow.Add(18 * time.Hour)
+	tnow := time.Now().Local().Truncate(24 * time.Hour).Add(24 * time.Hour)
+	t6 := time.Date(tnow.Year(), tnow.Month(), tnow.Day(), 6, 0, 0, 0, time.Local)
+	t18 := time.Date(tnow.Year(), tnow.Month(), tnow.Day(), 18, 0, 0, 0, time.Local)
 	return t6, t18
 }
 
