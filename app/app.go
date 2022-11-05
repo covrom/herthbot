@@ -11,6 +11,8 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+const currListFile = "/data/daylist.json"
+
 type App struct {
 	bot         *tgbotapi.BotAPI
 	currentList *store.DayList
@@ -42,7 +44,12 @@ func New() *App {
 }
 
 func (a *App) Serve(ctx context.Context) {
-	// a.LoadDayList()
+	dl := &store.DayList{}
+	if err := dl.Load(currListFile); err != nil {
+		log.Print(err)
+	} else {
+		a.currentList = dl
+	}
 
 	tck := time.NewTicker(time.Second)
 	defer tck.Stop()
@@ -87,6 +94,9 @@ Send your full name to queue up, or send /list command to see full queue for tod
 						if err := a.currentList.TailAddPeople(msg.Text); err != nil {
 							a.SendToChat(msg.Chat.ID, fmt.Sprintf("Error: %s. Try again.", err))
 						} else {
+							if err := a.currentList.Save(currListFile); err != nil {
+								log.Print(err)
+							}
 							a.SendToChat(msg.Chat.ID, "Successfully added to the queue! You can view the queue with the /list command.")
 						}
 					}
