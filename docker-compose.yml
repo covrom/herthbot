@@ -1,0 +1,6 @@
+version: "3.7"
+services:
+  herthbot:
+    build: .
+    image: herthbot:latest
+    restart: always
